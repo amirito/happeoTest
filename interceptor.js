@@ -1,24 +1,23 @@
 var axios = require("axios");
-let reqqueue = [];
 const params = [];
 
 module.exports = batchInterceptor = (instance) => { 
     instance.interceptors.request.use( request => {
-    // console.log("request", request)
-        reqqueue = request;
+        const defParam = request.params;
         // Add your code here
         
         request.url = request.host + request.url;
-
-        new Promise(resolve => {
-            reqLength += 1; 
-        })
         new Promise(resolve => {
             params.push(request.params.ids)
-            reqqueue.params.ids = params;
-            console.log("reqqueue", params);
-            console.log("reqqueue.length", params.length);
-            if (params.length === 3) {
+            resolve(params)
+        });
+
+        console.log("defParam", defParam.ids);
+
+        console.log("params[0]", params[0])
+
+        setTimeout(function() {
+            if (defParam.ids === params[0]) {
                 axios.get(request.url , {params: {ids: params}})
                     .then(function (response) {
                         // handle success
@@ -31,27 +30,11 @@ module.exports = batchInterceptor = (instance) => {
                     .then(function () {
                         // always executed
                     });
-            } 
-
-            throw new axios.Cancel('Operation canceled by the user.')
-        });
-
-        // return reqqueue;
+            }
+       }, 1000)
+        
+        throw new axios.Cancel('Operation canceled by the user.')
 
     }, error => Promise.reject(error));
-
-    // instance.interceptors.response.use(response=>{
-    //     console.log("response", response);
-
-    //     return response;
-        
-    // },
-    //     error=>{
-    //     // console.log("error: ", error)
-    //       const fallbackValue = [
-    //         {userId: "Not authorized",id: "aerw15311sq",
-    //          title: "Please try     again",completed: false}];
-    //        return Promise.reject(fallbackValue);}
-    //     );
 }
 
