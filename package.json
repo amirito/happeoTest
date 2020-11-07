@@ -1,0 +1,22 @@
+{
+  "name": "happeotest",
+  "version": "1.0.0",
+  "description": "",
+  "main": "appClient.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amirito/happeoTest.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/amirito/happeoTest/issues"
+  },
+  "homepage": "https://github.com/amirito/happeoTest#readme",
+  "dependencies": {
+    "axios": "^0.21.0"
+  }
+}
