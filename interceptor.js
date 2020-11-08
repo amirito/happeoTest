@@ -1,40 +1,70 @@
 var axios = require("axios");
-const params = [];
+
+const canceled = Symbol("canceled");
+let idsQueue = new Set();
+let queueResolve;
+
+const getQueuePromise = () =>
+    new Promise((resolve) => {
+        queueResolve = resolve;
+    });
+let queuePromise = getQueuePromise();
+
+// add a timeout function to send a unique request to server
+const queueInterval = setTimeout(async () => {
+    if (!idsQueue.size) {
+        return;
+    }
+    const res = await axios.get(
+        "https://europe-west1-quickstart-1573558070219.cloudfunctions.net/file-batch-api",
+        { params: { ids: [...idsQueue.values()] } }
+    );
+    queueResolve(res.data);
+    queuePromise = getQueuePromise();
+}, 100);
+
 
 module.exports = batchInterceptor = (instance) => { 
-    instance.interceptors.request.use( request => {
-        const defParam = request.params;
+    instance.interceptors.request.use( async request => {
         // Add your code here
-        
         request.url = request.host + request.url;
-        new Promise(resolve => {
-            params.push(request.params.ids)
-            resolve(params)
-        });
 
-        console.log("defParam", defParam.ids);
+        // check if URLs are similar
+        if (request.url.endsWith("/file-batch-api")) {
 
-        console.log("params[0]", params[0])
+            // create a queue of IDs
+            request.params.ids.forEach((i) => {
+                idsQueue.add(i);
+            });
 
-        setTimeout(function() {
-            if (defParam.ids === params[0]) {
-                axios.get(request.url , {params: {ids: params}})
-                    .then(function (response) {
-                        // handle success
-                        console.log('data: ', response.data);
-                    })
-                    .catch(function (error) {
-                        // handle error
-                        console.log(error);
-                    })
-                    .then(function () {
-                        // always executed
-                    });
-            }
-       }, 1000)
-        
-        throw new axios.Cancel('Operation canceled by the user.')
+            // cancel request and send request data to catch
+            throw new axios.Cancel({
+                symb: canceled,
+                request,
+                promise: queuePromise
+            });
+        }
+
+        return request;
+       
 
     }, error => Promise.reject(error));
+
+    instance.interceptors.response.use(
+        async (response) => {
+            return response;
+        },
+        (error) => {
+            if (error.message.symb === canceled) {
+                const requestedIds = error.message.request.params.ids;
+        
+                // return specific data for each API call
+                return error.message.promise.then((data) => ({
+                    items: data.items.filter((i) => requestedIds.includes(i.id))
+                }));
+            }
+            return error;
+        });
+    
 }
 

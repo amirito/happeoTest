@@ -7,18 +7,15 @@ function runTest() {
 
     // Should return [{id:"fileid1"},{id:"fileid2"}] 
     apiClient.get(batchUrl, {params: {ids: ["fileid1","fileid2"]}}).then(function (response) {
-        console.log('1: ', response.data);
-    }).catch(function (error) {
-        // handle error
-        console.log('error ========> ', error);
+        console.log('1: ', response);
     });
     // Should return [{id:"fileid2"}] 
     apiClient.get(batchUrl, {params: {ids: ["fileid2"]}}).then(function (response) {
-        console.log('2: ', response.data);
+        console.log('2: ', response);
     });
     // Should reject as the fileid3 is missing from the response
     apiClient.get(batchUrl, {params: {ids: ["fileid3"]}}).then(function (response) {
-        console.log('3: ', response.data);
+        console.log('3: ', response);
     }); 
 
 }
