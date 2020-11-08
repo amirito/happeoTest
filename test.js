@@ -1,4 +1,4 @@
-apiClient = require("./appClient")();
+const apiClient = require("./appClient")();
 
 // All requests should run at the same time and produce only one request to the backend. All requests should return or reject.
 function runTest() {
